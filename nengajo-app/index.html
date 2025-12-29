@@ -41,36 +41,6 @@
         .font-hina { font-family: 'Hina Mincho', serif; }  
         .font-maru { font-family: 'Zen Maru Gothic', sans-serif; }  
   
-        /* --- 背景パターン --- */  
-          
-        /* 1. 青海波 (Traditional) */  
-        .pattern-seigaiha {  
-            background-color: #ffffff;  
-            background-image: radial-gradient(#e5e7eb 15%, transparent 16%),  
-            radial-gradient(#e5e7eb 15%, transparent 16%);  
-            background-size: 20px 20px;  
-            background-position: 0 0, 10px 10px;  
-        }  
-  
-        /* 2. 市松 (Modern Blue) */  
-        .pattern-ichimatsu {  
-            background-color: #ffffff;  
-            background-image:   
-                linear-gradient(45deg, #e0f2fe 25%, transparent 25%),   
-                linear-gradient(-45deg, #e0f2fe 25%, transparent 25%),   
-                linear-gradient(45deg, transparent 75%, #e0f2fe 75%),   
-                linear-gradient(-45deg, transparent 75%, #e0f2fe 75%);  
-            background-size: 20px 20px;  
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;  
-        }  
-  
-        /* 3. ドット (Pop Yellow) */  
-        .pattern-dots {  
-            background-color: #fffbeb;  
-            background-image: radial-gradient(#fcd34d 20%, transparent 20%);  
-            background-size: 16px 16px;  
-        }  
-  
         /* 縦書き設定 */  
         .vertical-text {  
             writing-mode: vertical-rl;  
@@ -151,14 +121,30 @@
         const CARD_WIDTH = 378;  
         const CARD_HEIGHT = 559;  
   
+        // --- Helper: 市松模様のスタイルを生成する関数 ---  
+        // html2canvasで安定して出力される linear-gradient を使用  
+        const getCheckeredPatternStyle = (color) => {  
+            return {  
+                backgroundColor: '#ffffff',  
+                backgroundImage: `  
+                    linear-gradient(45deg, ${color} 25%, transparent 25%),   
+                    linear-gradient(-45deg, ${color} 25%, transparent 25%),   
+                    linear-gradient(45deg, transparent 75%, ${color} 75%),   
+                    linear-gradient(-45deg, transparent 75%, ${color} 75%)  
+                `,  
+                backgroundSize: '20px 20px',  
+                backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'  
+            };  
+        };  
+  
         // --- Templates Data ---  
+        // すべて市松模様(Checkered)に統一し、色のみ変更  
         const TEMPLATES = [  
             {  
                 id: 'trad-red',  
                 name: '伝統 (赤)',  
                 mainColor: '#D9333F', // Japanese Red  
-                bgColor: 'bg-white',  
-                patternClass: 'pattern-seigaiha',  
+                patternStyle: getCheckeredPatternStyle('#ffe4e6'), // 薄い赤の市松模様  
                 fontHeading: 'font-hina',  
                 fontBody: 'font-mincho',  
                 decorType: 'horse-trad'  
@@ -167,8 +153,7 @@
                 id: 'mod-blue',  
                 name: 'モダン (青)',  
                 mainColor: '#0369a1', // Sky Blue 700  
-                bgColor: 'bg-sky-50',  
-                patternClass: 'pattern-ichimatsu',  
+                patternStyle: getCheckeredPatternStyle('#e0f2fe'), // 薄い青の市松模様  
                 fontHeading: 'font-maru',  
                 fontBody: 'font-maru',  
                 decorType: 'horse-mod'  
@@ -177,8 +162,7 @@
                 id: 'pop-yellow',  
                 name: 'ポップ (黄)',  
                 mainColor: '#b45309', // Amber 700  
-                bgColor: 'bg-yellow-50',  
-                patternClass: 'pattern-dots',  
+                patternStyle: getCheckeredPatternStyle('#fef3c7'), // 薄い黄色の市松模様  
                 fontHeading: 'font-maru',  
                 fontBody: 'font-mincho',  
                 decorType: 'horse-pop'  
@@ -398,7 +382,7 @@
             giftUrl,   
             backgroundImage,   
             messageStyle,   
-            template,   
+            template, // Selected Template Object  
             imageScale,  
             imagePos,  
             onDragStart,  
@@ -411,11 +395,11 @@
         }) => {  
             return (  
                 <div   
-                    className={`shadow-2xl overflow-hidden relative flex flex-col mx-auto transition-all ${template.bgColor}`}  
+                    className="shadow-2xl overflow-hidden relative flex flex-col mx-auto transition-all"  
                     style={{   
                         width: `${CARD_WIDTH}px`,   
                         height: `${CARD_HEIGHT}px`,  
-                        // 固定サイズ設定 (html2canvas対策)  
+                        // 固定サイズ設定  
                         minWidth: `${CARD_WIDTH}px`,  
                         maxWidth: `${CARD_WIDTH}px`,  
                         minHeight: `${CARD_HEIGHT}px`,  
@@ -423,8 +407,16 @@
                         boxSizing: 'border-box'  
                     }}   
                 >  
-                    {/* --- Background Layer --- */}  
-                    <div className={`absolute inset-0 ${template.patternClass} pointer-events-none z-0`}></div>  
+                    {/* --- Background Layer (Applied via Inline Style for html2canvas compatibility) --- */}  
+                    <div   
+                        style={{  
+                            position: 'absolute',  
+                            inset: 0,  
+                            zIndex: 0,  
+                            pointerEvents: 'none',  
+                            ...template.patternStyle // Inject pattern style directly  
+                        }}  
+                    ></div>  
                     <div className="absolute inset-0 border-[10px] border-white z-10 pointer-events-none"></div>  
   
                     {/* --- Content Container --- */}  
@@ -561,6 +553,7 @@
   
         // --- Main Application ---  
         function App() {  
+            const [showGenerator, setShowGenerator] = useState(false);  
             const [giftUrl, setGiftUrl] = useState('');  
             const [recipientName, setRecipientName] = useState('');  
             const [message, setMessage] = useState('謹んで新春の\nお慶びを申し上げます\n\n旧年中は大変お世話に\nなりました\n本年もどうぞよろしく\nお願いいたします');  
@@ -636,7 +629,9 @@
                 if (generatorRef.current) {  
                     generatorRef.current.scrollIntoView({ behavior: 'smooth' });  
                 }  
+                setShowGenerator(true);   
             };  
+  
             const generatorRef = useRef(null);  
   
             const handleCreateImage = async () => {  
@@ -645,11 +640,11 @@
                 const element = document.getElementById('capture-target');  
                 if (!element) return;  
                 try {  
-                    // 重要: 固定サイズキャプチャ設定  
+                    // 重要: 固定サイズキャプチャ設定 + 背景色なし(透過OK)だがインラインスタイルで背景を描画  
                     const canvas = await html2canvas(element, {  
                         scale: 3,   
                         useCORS: true,   
-                        backgroundColor: null,  
+                        backgroundColor: null, // インラインスタイルで背景を描画するためnullにする  
                         width: CARD_WIDTH,   
                         height: CARD_HEIGHT,   
                         windowWidth: 1600, // PCサイズ偽装  
@@ -684,8 +679,17 @@
                 const file = new File([generatedBlob], fileName, { type: "image/png" });  
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {  
                     try {  
-                        await navigator.share({ files: [file], title: 'スマートお年賀', text: 'あけましておめでとうございます！' });  
-                    } catch (error) { if (error.name !== 'AbortError') alert("シェアに失敗しました。画像を長押しして保存してください。"); }  
+                        await navigator.share({  
+                            files: [file],  
+                            title: 'スマートお年賀',  
+                            text: 'あけましておめでとうございます！',   
+                        });  
+                    } catch (error) {  
+                        if (error.name !== 'AbortError') {  
+                            console.error('Share failed:', error);  
+                            alert("シェアに失敗しました。画像を長押しして保存してください。");  
+                        }  
+                    }  
                 } else {  
                     alert("お使いの環境では直接シェアできません。画像を長押しして保存してください。");  
                 }  
@@ -815,7 +819,11 @@
                                         <div className="grid grid-cols-3 gap-3">  
                                             {TEMPLATES.map(t => (  
                                                 <button key={t.id} onClick={() => setSelectedTemplate(t)} className={`flex flex-col items-center gap-2 p-2 rounded-xl border-2 transition-all ${selectedTemplate.id === t.id ? 'border-[#D9333F] bg-red-50' : 'border-stone-100 hover:border-stone-300'}`}>  
-                                                    <div className={`w-full h-12 rounded-lg ${t.bgColor} ${t.patternClass} border border-stone-100 relative overflow-hidden`}>  
+                                                    <div   
+                                                        className="w-full h-12 rounded-lg border border-stone-100 relative overflow-hidden"  
+                                                        // Template selection preview also needs inline styles  
+                                                        style={t.patternStyle}  
+                                                    >  
                                                         <div className="absolute inset-0 flex items-center justify-center text-xs" style={{color: t.mainColor}}>2026</div>  
                                                     </div>  
                                                     <span className="text-xs font-bold text-stone-600">{t.name}</span>  
@@ -888,7 +896,7 @@
                         <div className="max-w-6xl mx-auto px-4 pb-12 pt-4 text-center no-print w-full flex flex-col md:flex-row items-center justify-center gap-4">  
                             <button onClick={handleCreateImage} disabled={isProcessing} className="inline-flex items-center gap-3 px-8 py-4 rounded-full font-bold text-white text-lg transition-all hover:scale-105 active:scale-95 shadow-xl hover:shadow-2xl disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto min-w-[300px] justify-center" style={{ backgroundColor: selectedTemplate.mainColor }}>  
                                 {isProcessing ? <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> : <IconMagic size={24} />}  
-                                <span>{isProcessing ? '作成中...' : 'お年賀eギフトを作成'}</span>  
+                                <span>{isProcessing ? 'お年賀eギフトを作成' : 'お年賀eギフトを作成'}</span>  
                             </button>  
                             <button onClick={handlePrint} className="inline-flex items-center gap-2 px-6 py-4 rounded-full font-bold text-stone-600 bg-white border border-stone-200 text-lg transition-transform hover:bg-stone-50 active:scale-95 shadow-sm hover:text-[#D9333F]"><IconPrinter size={20} /> <span>印刷画面へ</span></button>  
                         </div>  
