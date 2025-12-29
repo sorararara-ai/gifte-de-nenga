@@ -41,9 +41,6 @@
         .font-hina { font-family: 'Hina Mincho', serif; }  
         .font-maru { font-family: 'Zen Maru Gothic', sans-serif; }  
   
-        /* --- 背景パターン --- */  
-        /* JS側でインラインスタイルとして定義するため、CSSクラスは削除 */  
-          
         /* 縦書き設定 */  
         .vertical-text {  
             writing-mode: vertical-rl;  
@@ -124,30 +121,40 @@
         const CARD_WIDTH = 378;  
         const CARD_HEIGHT = 559;  
   
-        // --- Helper: 市松模様のスタイルを生成する関数 ---  
-        // html2canvasで最も安定して出力される linear-gradient を使用  
-        const getCheckeredPatternStyle = (color) => {  
-            return {  
+        // --- Helper: SVG to Data URL ---  
+        const svgToDataUrl = (svgString) => {  
+            return `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}")`;  
+        };  
+  
+        // --- Pattern Styles (Inline styles for better html2canvas support) ---  
+        const PATTERN_STYLES = {  
+            seigaiha: {  
                 backgroundColor: '#ffffff',  
-                backgroundImage: `  
-                    linear-gradient(45deg, ${color} 25%, transparent 25%),   
-                    linear-gradient(-45deg, ${color} 25%, transparent 25%),   
-                    linear-gradient(45deg, transparent 75%, ${color} 75%),   
-                    linear-gradient(-45deg, transparent 75%, ${color} 75%)  
-                `,  
+                backgroundImage: svgToDataUrl(`<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="0" cy="0" r="3" fill="#e5e7eb"/><circle cx="20" cy="0" r="3" fill="#e5e7eb"/><circle cx="0" cy="20" r="3" fill="#e5e7eb"/><circle cx="20" cy="20" r="3" fill="#e5e7eb"/><circle cx="10" cy="10" r="3" fill="#e5e7eb"/></svg>`),  
                 backgroundSize: '20px 20px',  
-                backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'  
-            };  
+                backgroundRepeat: 'repeat'  
+            },  
+            ichimatsu: {  
+                backgroundColor: '#ffffff',  
+                backgroundImage: svgToDataUrl(`<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="10" height="10" fill="#e0f2fe"/><rect x="10" y="10" width="10" height="10" fill="#e0f2fe"/></svg>`),  
+                backgroundSize: '20px 20px',  
+                backgroundRepeat: 'repeat'  
+            },  
+            dots: {  
+                backgroundColor: '#fffbeb',  
+                backgroundImage: svgToDataUrl(`<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="3" fill="#fcd34d"/></svg>`),  
+                backgroundSize: '16px 16px',  
+                backgroundRepeat: 'repeat'  
+            }  
         };  
   
         // --- Templates Data ---  
-        // すべて市松模様(Checkered)に統一し、色のみ変更  
         const TEMPLATES = [  
             {  
                 id: 'trad-red',  
                 name: '伝統 (赤)',  
                 mainColor: '#D9333F', // Japanese Red  
-                patternStyle: getCheckeredPatternStyle('#ffe4e6'), // 薄い赤の市松模様  
+                patternStyle: PATTERN_STYLES.seigaiha,  
                 fontHeading: 'font-hina',  
                 fontBody: 'font-mincho',  
                 decorType: 'horse-trad'  
@@ -156,7 +163,7 @@
                 id: 'mod-blue',  
                 name: 'モダン (青)',  
                 mainColor: '#0369a1', // Sky Blue 700  
-                patternStyle: getCheckeredPatternStyle('#e0f2fe'), // 薄い青の市松模様  
+                patternStyle: PATTERN_STYLES.ichimatsu,  
                 fontHeading: 'font-maru',  
                 fontBody: 'font-maru',  
                 decorType: 'horse-mod'  
@@ -165,7 +172,7 @@
                 id: 'pop-yellow',  
                 name: 'ポップ (黄)',  
                 mainColor: '#b45309', // Amber 700  
-                patternStyle: getCheckeredPatternStyle('#fef3c7'), // 薄い黄色の市松模様  
+                patternStyle: PATTERN_STYLES.dots,  
                 fontHeading: 'font-maru',  
                 fontBody: 'font-mincho',  
                 decorType: 'horse-pop'  
@@ -264,16 +271,67 @@
                             </p>  
                         </div>  
   
-                        {/* Image Inserted Here */}  
-                        <div className="mb-6 flex justify-center">  
+                        {/* Image & Visual Description Container */}  
+                        <div className="flex flex-col items-center mb-8">  
+                            {/* 画像の挿入：少し回転をつけて配置 */}  
                             <img   
                                 src="サンプル画像2.jpg"   
                                 alt="スマートお年賀サンプル"   
-                                className="max-w-[80%] md:max-w-[280px] h-auto object-contain shadow-lg rounded-lg transform rotate-2"  
-                                onError={(e) => {  
-                                    e.target.style.display = 'none'; // 万が一画像がない場合は非表示に  
-                                }}  
+                                className="max-w-[80%] md:max-w-[280px] h-auto object-contain shadow-lg rounded-lg mb-8 transform rotate-3 hover:rotate-0 transition-transform duration-500"  
+                                onError={(e) => { e.target.style.display = 'none'; }}  
                             />  
+                              
+                            {/* ビジュアル説明：アイコンとステップ図 */}  
+                            <div className="w-full max-w-lg bg-stone-50 rounded-2xl p-6 border border-stone-200">  
+                                <h3 className="font-bold text-stone-700 mb-6 flex items-center justify-center gap-2">  
+                                    <IconSparkles className="text-yellow-500" />   
+                                    3ステップで簡単！  
+                                </h3>  
+                                  
+                                <div className="flex items-start justify-between relative">  
+                                    {/* PC用: 横線 */}  
+                                    <div className="absolute top-6 left-12 right-12 h-0.5 bg-stone-300 -z-10 hidden md:block"></div>  
+                                      
+                                    {/* Step 1 */}  
+                                    <div className="flex flex-col items-center gap-2 flex-1">  
+                                        <div className="w-12 h-12 bg-white border-2 border-[#D9333F] rounded-full flex items-center justify-center text-[#D9333F] shadow-sm z-10">  
+                                            <IconMagic size={24} />  
+                                        </div>  
+                                        <div className="text-center">  
+                                            <span className="block text-sm font-bold text-stone-700">作成</span>  
+                                            <span className="block text-[10px] text-stone-500">好きなデザインで</span>  
+                                        </div>  
+                                    </div>  
+  
+                                    {/* スマホ用: 矢印 */}  
+                                    <div className="self-center pt-3 text-stone-300 md:hidden">▶</div>  
+  
+                                    {/* Step 2 */}  
+                                    <div className="flex flex-col items-center gap-2 flex-1">  
+                                        <div className="w-12 h-12 bg-white border-2 border-yellow-500 rounded-full flex items-center justify-center text-yellow-500 shadow-sm z-10">  
+                                            <IconGift size={24} />  
+                                        </div>  
+                                        <div className="text-center">  
+                                            <span className="block text-sm font-bold text-stone-700">ギフト添付</span>  
+                                            <span className="block text-[10px] text-stone-500">URLを貼るだけ</span>  
+                                        </div>  
+                                    </div>  
+  
+                                    {/* スマホ用: 矢印 */}  
+                                    <div className="self-center pt-3 text-stone-300 md:hidden">▶</div>  
+  
+                                    {/* Step 3 */}  
+                                    <div className="flex flex-col items-center gap-2 flex-1">  
+                                        <div className="w-12 h-12 bg-white border-2 border-green-500 rounded-full flex items-center justify-center text-green-500 shadow-sm z-10">  
+                                            <IconShare size={24} />  
+                                        </div>  
+                                        <div className="text-center">  
+                                            <span className="block text-sm font-bold text-stone-700">SNS送信</span>  
+                                            <span className="block text-[10px] text-stone-500">LINEなどで送る</span>  
+                                        </div>  
+                                    </div>  
+                                </div>  
+                            </div>  
                         </div>  
                           
                         {/* サービス説明 */}  
@@ -401,11 +459,11 @@
         }) => {  
             return (  
                 <div   
-                    className="shadow-2xl overflow-hidden relative flex flex-col mx-auto transition-all"  
+                    className={`shadow-2xl overflow-hidden relative flex flex-col mx-auto transition-all ${template.bgColor}`}  
                     style={{   
                         width: `${CARD_WIDTH}px`,   
                         height: `${CARD_HEIGHT}px`,  
-                        // 固定サイズ設定 (html2canvas対策)  
+                        // 固定サイズ設定  
                         minWidth: `${CARD_WIDTH}px`,  
                         maxWidth: `${CARD_WIDTH}px`,  
                         minHeight: `${CARD_HEIGHT}px`,  
