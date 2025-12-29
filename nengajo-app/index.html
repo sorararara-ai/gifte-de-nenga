@@ -279,10 +279,13 @@
                         <div className="flex flex-col items-center mb-8">  
                             {/* 画像の挿入：少し回転をつけて配置 */}  
                             <img   
-                                src="サンプル画像2.jpg"   
+                                src="./サンプル画像2.jpg"   
                                 alt="スマートお年賀サンプル"   
                                 className="max-w-[80%] md:max-w-[280px] h-auto object-contain shadow-lg rounded-lg mb-8 transform rotate-3 hover:rotate-0 transition-transform duration-500"  
-                                onError={(e) => { e.target.style.display = 'none'; }}  
+                                onError={(e) => { 
+                                    console.error('画像の読み込みに失敗しました:', e.target.src);
+                                    e.target.style.display = 'none'; 
+                                }}  
                             />  
                               
                             {/* ビジュアル説明：アイコンとステップ図 */}  
@@ -705,10 +708,16 @@
   
             const handleCreateImage = async () => {  
                 setIsProcessing(true);  
-                await document.fonts.ready;  
-                const element = document.getElementById('capture-target');  
-                if (!element) return;  
-                try {  
+                try {
+                    await document.fonts.ready;  
+                    const element = document.getElementById('capture-target');  
+                    if (!element) {
+                        console.error('capture-target要素が見つかりません');
+                        alert('エラー: 年賀状の要素が見つかりませんでした。ページを再読み込みしてください。');
+                        setIsProcessing(false);
+                        return;
+                    }
+                    
                     // 重要: 固定サイズキャプチャ設定 + 背景色なし(透過OK)だがインラインスタイルで背景を描画  
                     const canvas = await html2canvas(element, {  
                         scale: 3,   
@@ -734,10 +743,15 @@
                     });  
                     const dataUrl = canvas.toDataURL("image/png");  
                     setGeneratedImage(dataUrl);  
-                    canvas.toBlob((blob) => { setGeneratedBlob(blob); setIsProcessing(false); }, 'image/png');  
+                    canvas.toBlob((blob) => { 
+                        if (blob) {
+                            setGeneratedBlob(blob); 
+                        }
+                        setIsProcessing(false); 
+                    }, 'image/png');  
                 } catch (error) {  
                     console.error("Generation failed:", error);  
-                    alert("エラーが発生しました。");  
+                    alert(`エラーが発生しました: ${error.message || '不明なエラー'}`);  
                     setIsProcessing(false);  
                 }  
             };  
