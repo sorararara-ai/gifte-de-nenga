@@ -42,7 +42,7 @@
         .font-maru { font-family: 'Zen Maru Gothic', sans-serif; }  
   
         /* --- 背景パターン --- */  
-        /* html2canvasでの描画安定のため、パターンはJS側のインラインスタイルで定義・適用する方式に変更済み */  
+        /* JS側でインラインスタイルとして定義するため、CSSクラスは削除 */  
           
         /* 縦書き設定 */  
         .vertical-text {  
@@ -124,40 +124,30 @@
         const CARD_WIDTH = 378;  
         const CARD_HEIGHT = 559;  
   
-        // --- Helper: SVG to Data URL ---  
-        const svgToDataUrl = (svgString) => {  
-            return `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}")`;  
-        };  
-  
-        // --- Pattern Styles (Inline styles for better html2canvas support) ---  
-        const PATTERN_STYLES = {  
-            seigaiha: {  
+        // --- Helper: 市松模様のスタイルを生成する関数 ---  
+        // html2canvasで最も安定して出力される linear-gradient を使用  
+        const getCheckeredPatternStyle = (color) => {  
+            return {  
                 backgroundColor: '#ffffff',  
-                backgroundImage: svgToDataUrl(`<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="0" cy="0" r="3" fill="#e5e7eb"/><circle cx="20" cy="0" r="3" fill="#e5e7eb"/><circle cx="0" cy="20" r="3" fill="#e5e7eb"/><circle cx="20" cy="20" r="3" fill="#e5e7eb"/><circle cx="10" cy="10" r="3" fill="#e5e7eb"/></svg>`),  
+                backgroundImage: `  
+                    linear-gradient(45deg, ${color} 25%, transparent 25%),   
+                    linear-gradient(-45deg, ${color} 25%, transparent 25%),   
+                    linear-gradient(45deg, transparent 75%, ${color} 75%),   
+                    linear-gradient(-45deg, transparent 75%, ${color} 75%)  
+                `,  
                 backgroundSize: '20px 20px',  
-                backgroundRepeat: 'repeat'  
-            },  
-            ichimatsu: {  
-                backgroundColor: '#ffffff',  
-                backgroundImage: svgToDataUrl(`<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="10" height="10" fill="#e0f2fe"/><rect x="10" y="10" width="10" height="10" fill="#e0f2fe"/></svg>`),  
-                backgroundSize: '20px 20px',  
-                backgroundRepeat: 'repeat'  
-            },  
-            dots: {  
-                backgroundColor: '#fffbeb',  
-                backgroundImage: svgToDataUrl(`<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="3" fill="#fcd34d"/></svg>`),  
-                backgroundSize: '16px 16px',  
-                backgroundRepeat: 'repeat'  
-            }  
+                backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'  
+            };  
         };  
   
         // --- Templates Data ---  
+        // すべて市松模様(Checkered)に統一し、色のみ変更  
         const TEMPLATES = [  
             {  
                 id: 'trad-red',  
                 name: '伝統 (赤)',  
                 mainColor: '#D9333F', // Japanese Red  
-                patternStyle: PATTERN_STYLES.seigaiha,  
+                patternStyle: getCheckeredPatternStyle('#ffe4e6'), // 薄い赤の市松模様  
                 fontHeading: 'font-hina',  
                 fontBody: 'font-mincho',  
                 decorType: 'horse-trad'  
@@ -166,7 +156,7 @@
                 id: 'mod-blue',  
                 name: 'モダン (青)',  
                 mainColor: '#0369a1', // Sky Blue 700  
-                patternStyle: PATTERN_STYLES.ichimatsu,  
+                patternStyle: getCheckeredPatternStyle('#e0f2fe'), // 薄い青の市松模様  
                 fontHeading: 'font-maru',  
                 fontBody: 'font-maru',  
                 decorType: 'horse-mod'  
@@ -175,7 +165,7 @@
                 id: 'pop-yellow',  
                 name: 'ポップ (黄)',  
                 mainColor: '#b45309', // Amber 700  
-                patternStyle: PATTERN_STYLES.dots,  
+                patternStyle: getCheckeredPatternStyle('#fef3c7'), // 薄い黄色の市松模様  
                 fontHeading: 'font-maru',  
                 fontBody: 'font-mincho',  
                 decorType: 'horse-pop'  
