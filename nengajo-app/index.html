@@ -41,6 +41,36 @@
         .font-hina { font-family: 'Hina Mincho', serif; }  
         .font-maru { font-family: 'Zen Maru Gothic', sans-serif; }  
   
+        /* --- 背景パターン --- */  
+          
+        /* 1. 青海波 (Traditional) */  
+        .pattern-seigaiha {  
+            background-color: #ffffff;  
+            background-image: radial-gradient(#e5e7eb 15%, transparent 16%),  
+            radial-gradient(#e5e7eb 15%, transparent 16%);  
+            background-size: 20px 20px;  
+            background-position: 0 0, 10px 10px;  
+        }  
+  
+        /* 2. 市松 (Modern Blue) */  
+        .pattern-ichimatsu {  
+            background-color: #ffffff;  
+            background-image:   
+                linear-gradient(45deg, #e0f2fe 25%, transparent 25%),   
+                linear-gradient(-45deg, #e0f2fe 25%, transparent 25%),   
+                linear-gradient(45deg, transparent 75%, #e0f2fe 75%),   
+                linear-gradient(-45deg, transparent 75%, #e0f2fe 75%);  
+            background-size: 20px 20px;  
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;  
+        }  
+  
+        /* 3. ドット (Pop Yellow) */  
+        .pattern-dots {  
+            background-color: #fffbeb;  
+            background-image: radial-gradient(#fcd34d 20%, transparent 20%);  
+            background-size: 16px 16px;  
+        }  
+  
         /* 縦書き設定 */  
         .vertical-text {  
             writing-mode: vertical-rl;  
@@ -121,30 +151,14 @@
         const CARD_WIDTH = 378;  
         const CARD_HEIGHT = 559;  
   
-        // --- Helper: 市松模様のスタイルを生成する関数 ---  
-        // html2canvasで安定して出力される linear-gradient を使用  
-        const getCheckeredPatternStyle = (color) => {  
-            return {  
-                backgroundColor: '#ffffff',  
-                backgroundImage: `  
-                    linear-gradient(45deg, ${color} 25%, transparent 25%),   
-                    linear-gradient(-45deg, ${color} 25%, transparent 25%),   
-                    linear-gradient(45deg, transparent 75%, ${color} 75%),   
-                    linear-gradient(-45deg, transparent 75%, ${color} 75%)  
-                `,  
-                backgroundSize: '20px 20px',  
-                backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'  
-            };  
-        };  
-  
         // --- Templates Data ---  
-        // すべて市松模様(Checkered)に統一し、色のみ変更  
         const TEMPLATES = [  
             {  
                 id: 'trad-red',  
                 name: '伝統 (赤)',  
                 mainColor: '#D9333F', // Japanese Red  
-                patternStyle: getCheckeredPatternStyle('#ffe4e6'), // 薄い赤の市松模様  
+                bgColor: 'bg-white',  
+                patternClass: 'pattern-seigaiha',  
                 fontHeading: 'font-hina',  
                 fontBody: 'font-mincho',  
                 decorType: 'horse-trad'  
@@ -153,7 +167,8 @@
                 id: 'mod-blue',  
                 name: 'モダン (青)',  
                 mainColor: '#0369a1', // Sky Blue 700  
-                patternStyle: getCheckeredPatternStyle('#e0f2fe'), // 薄い青の市松模様  
+                bgColor: 'bg-sky-50',  
+                patternClass: 'pattern-ichimatsu',  
                 fontHeading: 'font-maru',  
                 fontBody: 'font-maru',  
                 decorType: 'horse-mod'  
@@ -162,7 +177,8 @@
                 id: 'pop-yellow',  
                 name: 'ポップ (黄)',  
                 mainColor: '#b45309', // Amber 700  
-                patternStyle: getCheckeredPatternStyle('#fef3c7'), // 薄い黄色の市松模様  
+                bgColor: 'bg-yellow-50',  
+                patternClass: 'pattern-dots',  
                 fontHeading: 'font-maru',  
                 fontBody: 'font-mincho',  
                 decorType: 'horse-pop'  
@@ -261,16 +277,47 @@
                             </p>  
                         </div>  
   
-                        {/* Image Inserted Here */}  
-                        <div className="mb-4 flex justify-center">  
+                        {/* Image & Visual Description */}  
+                        <div className="flex flex-col items-center mb-6">  
                             <img   
-                                src="スマートお年賀.jpg"   
-                                alt="スマートお年賀"   
-                                className="max-w-[80%] md:max-w-[300px] h-auto object-contain"  
+                                src="サンプル画像2.jpg"   
+                                alt="スマートお年賀サンプル"   
+                                className="max-w-[80%] md:max-w-[280px] h-auto object-contain shadow-lg rounded-lg mb-6 transform rotate-2"  
                             />  
+                              
+                            {/* Visual Flow */}  
+                            <div className="w-full max-w-md bg-stone-50 rounded-2xl p-5 border border-stone-200">  
+                                <h3 className="font-bold text-stone-700 mb-4 flex items-center justify-center gap-2">  
+                                    <IconSparkles className="text-yellow-500" />   
+                                    スマートお年賀でできること  
+                                </h3>  
+                                <div className="flex items-start justify-between text-xs font-bold text-stone-600 relative">  
+                                    {/* Line connector */}  
+                                    <div className="absolute top-5 left-10 right-10 h-0.5 bg-stone-200 -z-10"></div>  
+  
+                                    <div className="flex flex-col items-center gap-2 w-1/3">  
+                                        <div className="w-10 h-10 bg-white border-2 border-[#D9333F] rounded-full flex items-center justify-center text-[#D9333F]">  
+                                            <IconMagic size={18} />  
+                                        </div>  
+                                        <span className="leading-tight">年賀状画像を<br/>作成</span>  
+                                    </div>  
+                                    <div className="flex flex-col items-center gap-2 w-1/3">  
+                                        <div className="w-10 h-10 bg-white border-2 border-yellow-500 rounded-full flex items-center justify-center text-yellow-500">  
+                                            <IconGift size={18} />  
+                                        </div>  
+                                        <span className="leading-tight">デジタルギフトを<br/>QRで添付</span>  
+                                    </div>  
+                                    <div className="flex flex-col items-center gap-2 w-1/3">  
+                                        <div className="w-10 h-10 bg-white border-2 border-green-500 rounded-full flex items-center justify-center text-green-500">  
+                                            <IconShare size={18} />  
+                                        </div>  
+                                        <span className="leading-tight">LINEやSNSで<br/>送れる！</span>  
+                                    </div>  
+                                </div>  
+                            </div>  
                         </div>  
                           
-                        {/* サービス説明 */}  
+                        {/* サービス説明テキスト */}  
                         <h2 className="text-2xl md:text-3xl font-bold text-stone-700 font-mincho">スマートお年賀とは？</h2>  
                         <p className="text-black font-medium leading-relaxed">  
                             スマートお年賀は、年賀状代わりにLINEやSNSで送れる、<br className="hidden md:block"/>ギフト付きデジタル年賀状です。  
@@ -399,7 +446,7 @@
                     style={{   
                         width: `${CARD_WIDTH}px`,   
                         height: `${CARD_HEIGHT}px`,  
-                        // 固定サイズ設定  
+                        // 固定サイズ設定 (html2canvas対策)  
                         minWidth: `${CARD_WIDTH}px`,  
                         maxWidth: `${CARD_WIDTH}px`,  
                         minHeight: `${CARD_HEIGHT}px`,  
@@ -512,6 +559,7 @@
                                                 <div className="absolute -bottom-1 -left-1 w-2 h-2 border-b border-l" style={{ borderColor: template.mainColor }}></div>  
                                                 <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r" style={{ borderColor: template.mainColor }}></div>  
                                                   
+                                                {/* 修正: mix-blend-multiplyを削除し、透過や白背景で対応 */}  
                                                 <img   
                                                     src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(giftUrl)}&color=${template.mainColor.replace('#', '')}&bgcolor=ffffff&margin=0`}  
                                                     alt="Gift QR"  
@@ -640,11 +688,11 @@
                 const element = document.getElementById('capture-target');  
                 if (!element) return;  
                 try {  
-                    // 重要: 固定サイズキャプチャ設定 + 背景色なし(透過OK)だがインラインスタイルで背景を描画  
+                    // 重要: 固定サイズキャプチャ設定  
                     const canvas = await html2canvas(element, {  
                         scale: 3,   
                         useCORS: true,   
-                        backgroundColor: null, // インラインスタイルで背景を描画するためnullにする  
+                        backgroundColor: null,  
                         width: CARD_WIDTH,   
                         height: CARD_HEIGHT,   
                         windowWidth: 1600, // PCサイズ偽装  
